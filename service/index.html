@@ -13,6 +13,9 @@
 
 
   <script type="text/javascript" src="libs/proj4js/lib/proj4js-compressed.js"></script> 
+<script type="text/javascript" src="libs/styles.js"></script>
+<script type="text/javascript" src="libs/layers.js"></script>
+
   <script>
   Proj4js.defs["EPSG:28992"] = "+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +units=m +no_defs";
   </script>
@@ -26,10 +29,10 @@
   }
   </style>
  <script type="text/javascript">
-        var map, layer, select, hover, control;
-
-        function init(){
-           map =  new OpenLayers.Map( 'map', {
+  var map, select, control, wmts, ecotopen;
+  var geojsonf = new OpenLayers.Format.GeoJSON;
+  function init(){
+    map =  new OpenLayers.Map( 'map', {
     projection: "EPSG:28992",
     units: "m",
     resolutions: [3440.64, 1720.32, 860.16, 430.08, 215.04, 107.52, 53.76,
@@ -42,50 +45,35 @@
         ]
     });
 
-           var matrixIds = new Array(26);
-  for (var i=0; i<26; ++i) {
-    matrixIds[i] = 'EPSG:28992'+':' + i;
-} 
-          var wmts = new OpenLayers.Layer.WMTS({
-    name: "BRTachtergrond",
-    url: "http://geodata.nationaalgeoregister.nl/wmts/",
-    layer: "brtachtergrondkaart",
-    matrixSet: "EPSG:28992",
-    matrixIds: matrixIds,
-    format: "image/png8",
-    style: ''
+          
+    select = new OpenLayers.Layer.Vector("Selection", {styleMap: 
+        new OpenLayers.Style(OpenLayers.Feature.Vector.style["select"])
     });
-          
-            layer = new OpenLayers.Layer.WMS(
-                "States WMS/WFS",
-                "/service/geoserver/research/ows",
-                {layers: 'research:ecotopes_map_waalweelde', format: 'image/png', transparent: true}, {isBaseLayer: false}
-            );
-            select = new OpenLayers.Layer.Vector("Selection", {styleMap: 
-                new OpenLayers.Style(OpenLayers.Feature.Vector.style["select"])
-            });
             
-            map.addLayers([wmts,layer, select]);
+    map.addLayers([wmts,ecotopen, select]);
             
-            control = new OpenLayers.Control.GetFeature({
-                protocol: OpenLayers.Protocol.WFS.fromWMSLayer(layer),
-                box: true,
-                
-                multipleKey: "shiftKey",
-                toggleKey: "ctrlKey"
-            });
-            control.events.register("featureselected", this, function(e) {
-                select.addFeatures([e.feature]);
-            });
-            control.events.register("featureunselected", this, function(e) {
-                select.removeFeatures([e.feature]);
-            });
-          
-            map.addControl(control);
-            control.activate();
+    control = new OpenLayers.Control.GetFeature({
+        protocol: OpenLayers.Protocol.WFS.fromWMSLayer(ecotopen),
+        box: true,
+        
+        multipleKey: "shiftKey",
+        toggleKey: "ctrlKey"
+    });
+    control.events.register("featureselected", this, function(e) {
+        select.addFeatures([e.feature]);
+    });
+    control.events.register("featureunselected", this, function(e) {
+        select.removeFeatures([e.feature]);
+    });
+  
+    map.addControl(control);
+    control.activate();
 
-            map.setCenter(new OpenLayers.LonLat(199000,434000),8)
-        }
+    map.setCenter(new OpenLayers.LonLat(199000,434000),8)
+}
+
+
+
     </script>
   </head>
 <body onload="init()">
