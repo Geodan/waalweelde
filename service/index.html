@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="nl">
+ <head>
+  <meta charset="utf-8">
+  <title>Dashboard Uiterwaardenbeheer</title>
+  
+
+  
+  <!-- openlayers -->
+  <link rel="stylesheet" type="text/css" href="./libs/openlayers/theme/default/style.css" />
+
+
+	<script type="text/javascript" src="./libs/openlayers/OpenLayers.js"></script>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+
+
+  <script type="text/javascript" src="libs/proj4js/lib/proj4js-compressed.js"></script> 
+  <script>
+  Proj4js.defs["EPSG:28992"] = "+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +units=m +no_defs";
+  </script>
+  <style>
+  #map {
+  width: 100%;
+  height: 800px;
+  }
+  .hidden {
+  display: none;
+  }
+  </style>
+
+  </head>
+<body onload="init()">
+<button  id="bereken" disabled="disabled">Bereken</button><img src="loading.gif" id="loadinggif" class="hidden"/>
+<div id="map"></div>
+<script>
+var map, selectControl, selectedFeature, geojsonf, vlayer, rlayer;
+geojsonf = new OpenLayers.Format.GeoJSON;
+var rule0 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: null}),symbolizer: {fillOpacity:0.8,fillColor:"#e8f2c4"}});
+var rule1 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "IX.a"}),symbolizer: {fillOpacity:0.8,fillColor:"#CB16A5"}});
+var rule2 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "IV.8-9"}),symbolizer: {fillOpacity:0.8,fillColor:"#743eab"}});
+var rule3 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "V.1-2"}),symbolizer: {fillOpacity:0.8,fillColor:"#3d6e99"}});
+var rule4 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "VII.1"}),symbolizer: {fillOpacity:0.8,fillColor:"#2aa19d"}});
+var rule5 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "VII.1-3"}),symbolizer: {fillOpacity:0.8,fillColor:"#D8D58C"}});
+var rule6 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "O-UA-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#DC21A3"}});
+var rule7 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "O-UG-1-2"}),symbolizer: {fillOpacity:0.8,fillColor:"#D024E7"}});
+var rule8 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "O-UB-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#bf2aae"}});
+var rule9 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "O-UG-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#733daa"}});
+var rule10 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "REST-O-U"}),symbolizer: {fillOpacity:0.8,fillColor:"#4771A3"}});
+var rule11 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "O-UK-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#923a3c"}});
+var rule12 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "O-UB-3"}),symbolizer: {fillOpacity:0.8,fillColor:"#F066B3"}});
+var rule13 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "O-UG-2"}),symbolizer: {fillOpacity:0.8,fillColor:"#75AB8B"}});
+var rule14 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "O-UR-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#923a3c"}});
+var rule15 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "O-UB-2"}),symbolizer: {fillOpacity:0.8,fillColor:"#4860b9"}});
+var rule16 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "O-UP-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#c62f61"}});
+var rule17 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "REST-O"}),symbolizer: {fillOpacity:0.8,fillColor:"#04CA3E"}});
+var rule18 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "HG-1-2"}),symbolizer: {fillOpacity:0.8,fillColor:"#35248E"}});
+var rule19 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "HB-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#3ba3c6"}});
+var rule20 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "HG-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#986c2e"}});
+var rule21 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "REST-H"}),symbolizer: {fillOpacity:0.8,fillColor:"#EAE490"}});
+var rule22 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "HB-3"}),symbolizer: {fillOpacity:0.8,fillColor:"#540E34"}});
+var rule23 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "HG-2"}),symbolizer: {fillOpacity:0.8,fillColor:"#F08EB7"}});
+var rule24 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "HB-2"}),symbolizer: {fillOpacity:0.8,fillColor:"#2844c1"}});
+var rule25 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "HA-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#9D1247"}});
+var rule26 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "HR-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#7a6264"}});
+var rule27 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "HP-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#bc9e34"}});
+var rule28 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "VI.8"}),symbolizer: {fillOpacity:0.8,fillColor:"#141A25"}});
+var rule29 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "VII.3"}),symbolizer: {fillOpacity:0.8,fillColor:"#ABB3AC"}});
+var rule30 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "UA-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#9B56F2"}});
+var rule31 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "UG-1-2"}),symbolizer: {fillOpacity:0.8,fillColor:"#72B6B4"}});
+var rule32 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "UB-4"}),symbolizer: {fillOpacity:0.8,fillColor:"#E5F8A8"}});
+var rule33 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "UB-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#92c13b"}});
+var rule34 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "UG-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#39c140"}});
+var rule35 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "REST-U"}),symbolizer: {fillOpacity:0.8,fillColor:"#454DEE"}});
+var rule36 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "UB-3"}),symbolizer: {fillOpacity:0.8,fillColor:"#56A197"}});
+var rule37 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "UG-2"}),symbolizer: {fillOpacity:0.8,fillColor:"#2760B3"}});
+var rule38 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "UM-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#559836"}});
+var rule39 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "UR-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#377bc8"}});
+var rule40 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "UB-2"}),symbolizer: {fillOpacity:0.8,fillColor:"#a23f79"}});
+var rule41 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "UP-1"}),symbolizer: {fillOpacity:0.8,fillColor:"#c66c4f"}});
+var rule42 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "VII.4"}),symbolizer: {fillOpacity:0.8,fillColor:"#27986d"}});
+var rule43 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "VI.4"}),symbolizer: {fillOpacity:0.8,fillColor:"#94a240"}});
+var rule44 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "VI.2-3"}),symbolizer: {fillOpacity:0.8,fillColor:"#32af5c"}});
+var rule45 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type: OpenLayers.Filter.Comparison.EQUAL_TO,property: "eco_code",      value: "II.2"}),symbolizer: {fillOpacity:0.8,fillColor:"#7029bc"}});
+
+
+
+var style = new OpenLayers.Style();
+style.addRules([rule0,rule1,rule2,rule3,rule4,rule5,rule6,rule7,rule8,rule9,rule10,rule11,rule12,rule13,rule14,rule15,rule16,rule17,rule18,rule19,rule20,rule21,rule22,rule23,rule24,rule25,rule26,rule27,rule28,rule29,rule30,rule31,rule32,rule33,rule34,rule35,rule36,rule37,rule38,rule39,rule40,rule41,rule42,rule43,rule44,rule45]);
+var styleMap = new OpenLayers.StyleMap({'default':style});
+function setProperty(e) {
+$('#bereken').attr('disabled',false);
+var code = $(e.contentDiv).find('.setklasse').val()
+var feature = e.feature;
+feature.attributes.eco_code = code;
+vlayer.redraw()
+e.destroy();
+
+}
+$('#bereken').click(function(){
+    $('#bereken').attr('disabled',true);
+    $('#loadinggif').removeClass('hidden');
+    var features = vlayer.features;
+    var url = 'get_prediction.php';
+    //var url = '/predict';
+    var data = geojsonf.write(features);
+    $.ajax({
+       type: "POST",
+       url: url,
+       dataType: "JSON",
+       data: {geojson: data},
+       success: function(msg){
+        $('#loadinggif').addClass('hidden');
+              handler(msg);
+                     },
+       fail: function(e){ $('#loadinggif').addClass('hidden');}
+    });
+});
+/*
+Functie om van een getekende feature een klasse te zetten
+
+*/
+function setKlasse(e) {
+    var feature = e.feature;
+     popup = new OpenLayers.Popup.FramedCloud("", 
+         feature.geometry.getBounds().getCenterLonLat(),
+         null,
+         "<div style='font-size:.8em'>Selecteer een klasse</div>" +
+         "<select class='setklasse'>"+
+         "<option value='IX.a'>Akker in oever</option>"+
+"<option value='IV.8-9'>Helofytenmoeras (riet/moerasplanten) in oever</option>"+
+"<option value='V.1-2'>Moerasruigte in oever</option>"+
+"<option value='VII.1'>Moerassig overstromingsgrasland in oever</option>"+
+"<option value='VII.1-3'>Moerassig overstromingsgrasland/productiegrasland in oever</option>"+
+"<option value='O-UA-1'>Oeverwal of uiterwaard akker</option>"+
+"<option value='O-UG-1-2'>Oeverwal of uiterwaard grasland (natuurlijk of productie)</option>"+
+"<option value='O-UB-1'>Oeverwal of uiterwaard natuurlijk bos</option>"+
+"<option value='O-UG-1'>Oeverwal of uiterwaard natuurlijk grasland</option>"+
+"<option value='REST-O-U'>Oeverwal of uiterwaard onbegroeid (antropogeen)</option>"+
+"<option value='O-UK-1'>Oeverwal of uiterwaard onberoeid (natuurlijk)</option>"+
+"<option value='O-UB-3'>Oeverwal of uiterwaard productiebos</option>"+
+"<option value='O-UG-2'>Oeverwal of uiterwaard productiegrasland</option>"+
+"<option value='O-UR-1'>Oeverwal of uiterwaard ruigte</option>"+
+"<option value='O-UB-2'>Oeverwal of uiterwaard struweel</option>"+
+"<option value='O-UP-1'>Oeverwal of uiterwaard vegetatie met lage bedekking (5 - 25%)</option>"+
+"<option value='REST-O'>Onbegroeid (antropogeen) in oever</option>"+
+"<option value='HG-1-2'>Overstromingsvrij grasland (natuurlijk of productie)</option>"+
+"<option value='HB-1'>Overstromingsvrij natuurlijk bos</option>"+
+"<option value='HG-1'>Overstromingsvrij natuurlijk grasland</option>"+
+"<option value='REST-H'>Overstromingsvrij onbegroeid (antropogeen)</option>"+
+"<option value='HB-3'>Overstromingsvrij productiebos</option>"+
+"<option value='HG-2'>Overstromingsvrij productiegrasland</option>"+
+"<option value='HB-2'>Overstromingsvrij struweel</option>"+
+"<option value='HA-1'>Overstromingsvrije akker</option>"+
+"<option value='HR-1'>Overstromingsvrije ruigte</option>"+
+"<option value='HP-1'>Overstromingsvrije vegetatie met lage bedekking (5 - 25%)</option>"+
+"<option value='VI.8'>Productiebos in oever</option>"+
+"<option value='VII.3'>Productiegrasland in oever</option>"+
+"<option value='UA-1'>Uiterwaard akker</option>"+
+"<option value='UG-1-2'>Uiterwaard grasland (natuurlijk of productie)</option>"+
+"<option value='UB-4'>Uiterwaard hoogstamboomgaard</option>"+
+"<option value='UB-1'>Uiterwaard natuurlijk bos</option>"+
+"<option value='UG-1'>Uiterwaard natuurlijk grasland</option>"+
+"<option value='REST-U'>Uiterwaard onbegroeid (antropogeen)</option>"+
+"<option value='UB-3'>Uiterwaard productiebos</option>"+
+"<option value='UG-2'>Uiterwaard productiegrasland</option>"+
+"<option value='UM-1'>Uiterwaard riet</option>"+
+"<option value='UR-1'>Uiterwaard ruigte</option>"+
+"<option value='UB-2'>Uiterwaard struweel</option>"+
+"<option value='UP-1'>Uiterwaard vegetatie met lage bedekking (5 - 25%)</option>"+
+"<option value='VII.4'>Vegetatie met lage bedekking (5 - 25%) in oever</option>"+
+"<option value='VI.4'>Zachthout ooibos in oever</option>"+
+"<option value='VI.2-3'>Zachthout struweel in oever</option>"+
+"<option value='II.2'>Zoete zandplaten</option>"+
+         "</select>"+
+         "<button onclick='setProperty(popup)'>OK</button>"
+         ,
+         null, false);
+    popup.feature = feature;
+    map.addPopup(popup);
+}
+
+
+
+
+
+
+
+
+
+function handler(request) {
+    // do something with the response
+    var feature = geojsonf.read(request);
+    vlayer.removeAllFeatures();
+    rlayer.removeAllFeatures();
+    rlayer.addFeatures(feature);
+} 
+ function getprediction(f) {
+            //var url = 'http://research.geodan.nl/sites/urd/service/get_prediction.php';
+          
+        }
+       
+
+
+//openlayers stuff
+function init() {
+var matrixIds = new Array(26);
+  for (var i=0; i<26; ++i) {
+    matrixIds[i] = 'EPSG:28992'+':' + i;
+}     
+ vlayer = new OpenLayers.Layer.Vector( "Editable",{styleMap:styleMap} );
+ rlayer = new OpenLayers.Layer.Vector( "Results" ,{styleMap:styleMap});
+var wmts = new OpenLayers.Layer.WMTS({
+    name: "Medford Buildings",
+    url: "http://geodata.nationaalgeoregister.nl/wmts/",
+    layer: "brtachtergrondkaart",
+    matrixSet: "EPSG:28992",
+    matrixIds: matrixIds,
+    format: "image/png8",
+    style: ''
+    });      
+map =  new OpenLayers.Map( 'map', {
+    projection: "EPSG:28992",
+    units: "m",
+    resolutions: [3440.64, 1720.32, 860.16, 430.08, 215.04, 107.52, 53.76,
+        26.88, 13.44, 6.72, 3.36, 1.68, 0.84, 0.42, 0.21],
+    maxExtent: [-285401.92,22598.08,595401.9199999999,903401.9199999999],
+    controls: [
+        new OpenLayers.Control.Zoom(),
+        new OpenLayers.Control.Navigation()
+        
+        ]
+    });
+    var polygon = new OpenLayers.Control.DrawFeature(vlayer,
+                            OpenLayers.Handler.Polygon);
+  
+map.addControl(polygon);
+polygon.activate();
+map.addLayers([wmts,vlayer,rlayer]);   
+map.setCenter(new OpenLayers.LonLat(199000,434000),8)
+
+vlayer.events.on({"featureadded": setKlasse}); 
+} 
+
+</script>
+</body>
+</html>
