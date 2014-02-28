@@ -16,6 +16,7 @@
 <script type="text/javascript" src="libs/styles.js"></script>
 <script type="text/javascript" src="libs/popup.js"></script>
 <script type="text/javascript" src="libs/layers.js"></script>
+<script type="text/javascript" src="libs/final.js"></script>
 <script src="libs/bootstrap-3.1.1-dist//js/bootstrap.min.js"></script>
 
   <script>
@@ -64,14 +65,17 @@ letter-spacing: 1px;
 .ecotoop:after {
   content: "ecotoop";
 }
+.resultaat:after {
+  content: "3 resultaat";
+}
 .olPopupContent .uitleg {
   margin:0;
 }
   </style>
  <script type="text/javascript">
-  var map, select, perceelcontrol, navcontrol, editcontrol, selectcontrol, resultcontrol, wmts, ecotopen, progress;
+  var map, select, perceelcontrol, navcontrol, editcontrol, selectcontrol, resultcontrol, wmts, ecotopen, progress, result;
   var geojsonf = new OpenLayers.Format.GeoJSON;
-  function init(){
+  $(document).ready(function(){
     map =  new OpenLayers.Map( 'map', {
     projection: "EPSG:28992",
     units: "m",
@@ -190,7 +194,9 @@ letter-spacing: 1px;
       selectcontrol.deactivate();
       navcontrol.activate();  
       $('.uitleg').addClass('text-muted');    
+      $('.resultaat').removeClass('text-muted'); 
       $('.btn').prop('disabled','disabled');
+      $('.btn-final').prop('disabled',false);
       $(".btn-group label").addClass('disabled').prop('disabled',true);
       $('#wachten').fadeIn('slow');
       progress = setInterval(function() {
@@ -244,17 +250,17 @@ letter-spacing: 1px;
       select.removeAllFeatures();
       result.removeAllFeatures();
       result.addFeatures(feature);
-      $('#json-resultaat').val('bla')
+      $('#json-resultaat').data('response',request);
   } 
 
 
-}
+})
 
 
 
     </script>
   </head>
-<body onload="init()">
+<body >
  <div class="container-fluid">
  
     <div class="col-xs-8 col-md-8 hoog"><div id="map"></div></div>
@@ -275,11 +281,11 @@ letter-spacing: 1px;
       
     </p>
   </div>
-      <div class="uitleg classificeren text-muted" style="display:none;">
+      <div class="uitleg classificeren" style="display:none;">
         <p>Klik op 'Classificeren' om te beginnen met herclassificeren. Klik vervolgens op de blauwe gebieden  om een nieuwe classificatie toe te kennen</p>
-        <p>Als alle gebieden de juiste classificate hebben, klik op 'Bereken' om de berekening te starten</p>
+        <p class="berekenen" style="display:none">Als alle gebieden de juiste classificate hebben, klik op 'Bereken' om de berekening te starten</p>
      <button type="button" id="btn-class" class="btn  btn-primary" disabled="disabled">Classificeren</button>
-     <button type="button" id="btn-calc" class="btn btn-success" disabled="disabled">Bereken</button>
+     <button type="button" id="btn-calc" class="btn btn-success" style="display:none" disabled="disabled">Bereken</button>
       </div>
       <div id="wachten" class="progress progress-striped active" style="display:none">
          <div id="bar-anim" up='true' class="progress-bar progress-bar-success" style="opacity: 0;width: 0%">
@@ -289,8 +295,10 @@ letter-spacing: 1px;
         <span class="sr-only"></span>
       </div>
     </div>
-    <div class="uitleg resultaat text-muted" style="display:none;">
-      <pre id="json-resultaat"></pre>
+    <div class="uitleg resultaat" style="display:none;">
+      <p>Klik op de verschillende gebieden om de resultaten te bekijken. Als alles naar wens is kan er terug naar het dashboard worden gegaan.</p>
+      <button class="btn btn-danger btn-final">Overnieuw</button>
+      <button id="json-resultaat" class="btn btn-success btn-final">Terug naar dashboard</button>
     </div>   
   </div>
 </body>
