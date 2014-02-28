@@ -51,3 +51,5 @@ var rule48 =new OpenLayers.Rule({ filter: new OpenLayers.Filter.Comparison({type
 var style = new OpenLayers.Style();
 style.addRules([rule0,rule1,rule2,rule3,rule4,rule5,rule6,rule7,rule8,rule9,rule10,rule11,rule12,rule13,rule14,rule15,rule16,rule17,rule18,rule19,rule20,rule21,rule22,rule23,rule24,rule25,rule26,rule27,rule28,rule29,rule30,rule31,rule32,rule33,rule34,rule35,rule36,rule37,rule38,rule39,rule40,rule41,rule42,rule43,rule44,rule45,rule46,rule47,rule48]);
 var styleMap = new OpenLayers.StyleMap({'default':style});
+var noStyle = new OpenLayers.Style(OpenLayers.Feature.Vector.style["select"]);
+var noStyleMap = new OpenLayers.StyleMap({'default':noStyle});

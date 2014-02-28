@@ -14,6 +14,7 @@
 
   <script type="text/javascript" src="libs/proj4js/lib/proj4js-compressed.js"></script> 
 <script type="text/javascript" src="libs/styles.js"></script>
+<script type="text/javascript" src="libs/popup.js"></script>
 <script type="text/javascript" src="libs/layers.js"></script>
 <script src="libs/bootstrap-3.1.1-dist//js/bootstrap.min.js"></script>
 
@@ -33,12 +34,36 @@
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
-  .hidden {
-  display: none;
+  .uitleg {
+margin-left: 0;
+margin-right: 0;
+background-color: #fff;
+border: solid 1px #ddd;
+box-shadow: none;
+    position: relative;
+padding: 45px 15px 15px;
+margin: 0 -15px 15px;
   }
+  .uitleg:after {
+
+position: absolute;
+top: 15px;
+left: 15px;
+font-size: 12px;
+font-weight: 700;
+color: #bbb;
+text-transform: uppercase;
+letter-spacing: 1px;
+}
+.classificeren:after {
+  content: "2 classificeren";
+}
+.selecteren:after {
+  content: "1 selecteren";
+}
   </style>
  <script type="text/javascript">
-  var map, select, perceelcontrol, navcontrol, editcontrol, wmts, ecotopen;
+  var map, select, perceelcontrol, navcontrol, editcontrol, selectcontrol, wmts, ecotopen;
   var geojsonf = new OpenLayers.Format.GeoJSON;
   function init(){
     map =  new OpenLayers.Map( 'map', {
@@ -54,14 +79,11 @@
         ]
     });
 
-          
-    select = new OpenLayers.Layer.Vector("Selection", {styleMap: 
-        new OpenLayers.Style(OpenLayers.Feature.Vector.style["select"])
-    });
-            
- var vlayer = new OpenLayers.Layer.Vector( "Editable",{styleMap:styleMap} );
 
-    map.addLayers([wmts,ecotopen, select,vlayer]);
+            
+    select = new OpenLayers.Layer.Vector( "Editable",{styleMap:noStyleMap} );
+
+    map.addLayers([wmts,ecotopen, select]);
     navcontrol =     new OpenLayers.Control.Navigation();
     perceelcontrol = new OpenLayers.Control.GetFeature({
         protocol: OpenLayers.Protocol.WFS.fromWMSLayer(ecotopen),
@@ -69,19 +91,58 @@
         multipleKey: "shiftKey",
         toggleKey: "ctrlKey"
     });
-    editcontrol = new OpenLayers.Control.DrawFeature(vlayer,
+    editcontrol = new OpenLayers.Control.DrawFeature(select,
                             OpenLayers.Handler.Polygon);
 
-
+    selectcontrol = new OpenLayers.Control.SelectFeature(select);
     perceelcontrol.events.register("featureselected", this, function(e) {
-        vlayer.addFeatures([e.feature]);
+        select.addFeatures([e.feature]);
     });
     perceelcontrol.events.register("featureunselected", this, function(e) {
-        vlayer.removeFeatures([e.feature]);
+        select.removeFeatures([e.feature]);
     });
     
+    select.onFeatureInsert = function(e){
+      if(select.features.length > 0) {
+        //we hebben features
+        $('#btn-class').prop('disabled',false);
+        $('.classificeren').removeClass('text-muted');
+        $('#btn-calc').prop('disabled',false);
+      }
+      else {
+         $('#btn-class').prop('disabled','disabled');
+        $('.classificeren').addClass('text-muted');
+        $('#btn-calc').prop('disabled','disabled');
+      }
+    };
+    selectcontrol.onSelect = function(feature){
+        if(feature.popup === null) {
+        var text = '';
+        if(feature.attributes.eco_code !== undefined) {
+          //we hebben een perceel
+          var code = feature.attributes.eco_code;
+          
+        }
+        else {
+          text =''// nieuwPopup;
+        }
+        var popup = new OpenLayers.Popup("", 
+         feature.geometry.getBounds().getCenterLonLat(),
+         null, 
+         text,
+         true);
+        
+        popup.autoSize = true;
 
-    map.addControls([perceelcontrol,navcontrol,editcontrol]);
+        feature.popup = popup;
+         map.addPopup(popup);
+         }
+         else {
+          feature.popup.show();
+         }
+    }
+
+    map.addControls([perceelcontrol,navcontrol,editcontrol,selectcontrol]);
     
 
     map.setCenter(new OpenLayers.LonLat(199000,434000),8)
@@ -90,17 +151,29 @@
       perceelcontrol.deactivate();
       editcontrol.deactivate();
       navcontrol.activate();
+      $('#btn-class').removeClass('active');
     })
     $('#btn-perceel').change(function(){
       perceelcontrol.activate();
       editcontrol.deactivate();
       navcontrol.deactivate();
+      $('#btn-class').removeClass('active');
     })   
     $('#btn-edit').change(function(){
       perceelcontrol.deactivate();
       editcontrol.activate();
       navcontrol.deactivate();
+      $('#btn-class').removeClass('active');
     }) 
+    $('#btn-class').click(function(){
+      perceelcontrol.deactivate();
+      editcontrol.deactivate();
+      navcontrol.activate();
+      selectcontrol.activate();
+       $('.btn').removeClass('active');
+       $(this).addClass('active');
+
+    })
 }
 
 
@@ -112,10 +185,10 @@
  
     <div class="col-xs-8 col-md-8 hoog"><div id="map"></div></div>
     <div class="col-xs-4 col-md-4 hoog">
-      <div class="alert alert-success"> 
-        Welkom bij het <strong>successie model</strong>. Gebruik onderstaande knoppen om een gebied te selecteren.
-      </div>
-      <div class="btn-group" data-toggle="buttons">
+      
+      <div class="uitleg selecteren">
+       <p> Gebruik onderstaande knoppen om 1 of meer gebieden te selecteren om te herclassificeren.</p>
+      <p class="btn-group" data-toggle="buttons">
         <label class="btn btn-primary active"  data-toggle="tooltip" data-placement="top" title="Navigeren op de kaart">
           <input type="radio" name="options" data-toggle="button" id="btn-nav"><span class="glyphicon glyphicon-hand-up"></span>
         </label>
@@ -125,6 +198,14 @@
         <label class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="Teken 1 of meer gebieden om te herclassificeren">
           <input type="radio" name="options" id="btn-edit"><span class="glyphicon glyphicon-pencil"></span>
         </label>
+      
+    </p>
+  </div>
+      <div class="uitleg classificeren text-muted">
+        <p>Klik op 'Classificeren' om te beginnen met herclassificeren. Klik vervolgens op de blauwe gebieden  om een nieuwe classificatie toe te kennen</p>
+        <p>Als alle gebieden de juiste classificate hebben, klik op 'Bereken' om de berekening te starten</p>
+     <button type="button" id="btn-class" class="btn btn-primary" disabled="disabled">Classificeren</button>
+     <button type="button" id="btn-calc" class="btn btn-success" disabled="disabled">Bereken</button>
       </div>
     </div>   
   </div>
