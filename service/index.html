@@ -156,7 +156,34 @@ letter-spacing: 1px;
          }
     }
 
-    map.addControls([perceelcontrol,navcontrol,editcontrol,selectcontrol]);
+    resultcontrol.onSelect = function(feature){
+        if(feature.popup === null) {
+        var text = '';
+        text += '<table class="table">';
+        text += '<tr><td><strong>Code</strong></td><td>'+feature.attributes.eco_code+'</td></tr>';
+        text += '<tr><td><strong>Ecotoop</strong></td><td>'+codeToToop(feature.attributes.eco_code)+'</td></tr>';
+        text += '<tr><td><strong>Ruwheid</strong></td><td>'+feature.attributes.roughness+'</td></tr>';
+        text += '</table>';
+        text += '<button type="button" class="btn btn-primary" onclick="rannuleer(\''+feature.id+'\')">OK</button>';
+
+        var popup = new OpenLayers.Popup("", 
+         feature.geometry.getBounds().getCenterLonLat(),
+         null, 
+         text,
+         false);
+        
+        
+        popup.autoSize = true;
+        popup.panMapIfOutOfView = true;
+        feature.popup = popup;
+         map.addPopup(popup);
+         }
+         else {
+          feature.popup.show();
+         }
+    }
+
+    map.addControls([perceelcontrol,navcontrol,editcontrol,selectcontrol,resultcontrol]);
     
 
     map.setCenter(new OpenLayers.LonLat(199000,434000),8)
@@ -193,6 +220,7 @@ letter-spacing: 1px;
       editcontrol.deactivate();
       selectcontrol.deactivate();
       navcontrol.activate();  
+      resultcontrol.activate();
       $('.uitleg').addClass('text-muted');    
       $('.resultaat').removeClass('text-muted'); 
       $('.btn').prop('disabled','disabled');
