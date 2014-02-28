@@ -61,9 +61,15 @@ letter-spacing: 1px;
 .selecteren:after {
   content: "1 selecteren";
 }
+.ecotoop:after {
+  content: "ecotoop";
+}
+.olPopupContent .uitleg {
+  margin:0;
+}
   </style>
  <script type="text/javascript">
-  var map, select, perceelcontrol, navcontrol, editcontrol, selectcontrol, wmts, ecotopen;
+  var map, select, perceelcontrol, navcontrol, editcontrol, selectcontrol, resultcontrol, wmts, ecotopen, progress;
   var geojsonf = new OpenLayers.Format.GeoJSON;
   function init(){
     map =  new OpenLayers.Map( 'map', {
@@ -82,8 +88,9 @@ letter-spacing: 1px;
 
             
     select = new OpenLayers.Layer.Vector( "Editable",{styleMap:noStyleMap} );
+    result = new OpenLayers.Layer.Vector( "Results",{styleMap:styleMap} );
 
-    map.addLayers([wmts,ecotopen, select]);
+    map.addLayers([wmts,ecotopen, select,result]);
     navcontrol =     new OpenLayers.Control.Navigation();
     perceelcontrol = new OpenLayers.Control.GetFeature({
         protocol: OpenLayers.Protocol.WFS.fromWMSLayer(ecotopen),
@@ -95,6 +102,7 @@ letter-spacing: 1px;
                             OpenLayers.Handler.Polygon);
 
     selectcontrol = new OpenLayers.Control.SelectFeature(select);
+    resultcontrol = new OpenLayers.Control.SelectFeature(result);
     perceelcontrol.events.register("featureselected", this, function(e) {
         select.addFeatures([e.feature]);
     });
@@ -103,6 +111,7 @@ letter-spacing: 1px;
     });
     
     select.onFeatureInsert = function(e){
+      $('.classificeren').fadeIn('slow');
       if(select.features.length > 0) {
         //we hebben features
         $('#btn-class').prop('disabled',false);
@@ -118,22 +127,23 @@ letter-spacing: 1px;
     selectcontrol.onSelect = function(feature){
         if(feature.popup === null) {
         var text = '';
-        if(feature.attributes.eco_code !== undefined) {
-          //we hebben een perceel
-          var code = feature.attributes.eco_code;
-          
-        }
-        else {
-          text =''// nieuwPopup;
-        }
         var popup = new OpenLayers.Popup("", 
          feature.geometry.getBounds().getCenterLonLat(),
          null, 
          text,
-         true);
+         false);
+        if(feature.attributes.eco_code !== undefined) {
+          //we hebben een perceel
+          var code = feature.attributes.eco_code;
+          text = genereerPopup(code,feature.id);
+        }
+        else {
+          text = genereerPopup('leeg',feature.id);
+        }
+        popup.contentHTML = text;
         
         popup.autoSize = true;
-
+        popup.panMapIfOutOfView = true;
         feature.popup = popup;
          map.addPopup(popup);
          }
@@ -174,6 +184,70 @@ letter-spacing: 1px;
        $(this).addClass('active');
 
     })
+    $('#btn-calc').click(function(){
+      perceelcontrol.deactivate();
+      editcontrol.deactivate();
+      selectcontrol.deactivate();
+      navcontrol.activate();  
+      $('.uitleg').addClass('text-muted');    
+      $('.btn').prop('disabled','disabled');
+      $(".btn-group label").addClass('disabled').prop('disabled',true);
+      $('#wachten').fadeIn('slow');
+      progress = setInterval(function() {
+        var width = parseFloat($('#bar-anim').prop('style').width)
+        var up = $('#bar-anim').prop('up');    
+        if(up) {
+          if(width<70) {
+            width = width + 2;
+          }
+          else {
+            $('#bar-anim').prop('up',false); 
+            width = width - 2;
+          }
+        } 
+        else {
+          if(width>0) {
+            width = width - 2;
+          }
+          else {
+             $('#bar-anim').prop('up',true); 
+            width = width + 2;
+          }
+        }
+        width = width+'%';
+         $('#bar-anim').css('width',width)
+
+      }, 200);
+      var features = select.features;
+      var url = 'get_prediction.php';
+      //var url = '/predict';
+      var data = geojsonf.write(features);
+      $.ajax({
+         type: "POST",
+         url: url,
+         dataType: "JSON",
+         data: {geojson: data},
+         success: function(msg){
+          
+                handler(msg);
+                       },
+         fail: function(e){ 
+         }
+      });
+  });
+    function handler(request) {
+      // do something with the response
+      clearInterval(progress);
+      $('#wachten').hide();
+      $('.resultaat').fadeIn('slow');
+      var feature = geojsonf.read(request);
+      select.removeAllFeatures();
+      result.removeAllFeatures();
+      result.addFeatures(feature);
+      $('#json-resultaat').val('bla')
+  } 
+
+
 }
 
 
@@ -201,12 +275,22 @@ letter-spacing: 1px;
       
     </p>
   </div>
-      <div class="uitleg classificeren text-muted">
+      <div class="uitleg classificeren text-muted" style="display:none;">
         <p>Klik op 'Classificeren' om te beginnen met herclassificeren. Klik vervolgens op de blauwe gebieden  om een nieuwe classificatie toe te kennen</p>
         <p>Als alle gebieden de juiste classificate hebben, klik op 'Bereken' om de berekening te starten</p>
-     <button type="button" id="btn-class" class="btn btn-primary" disabled="disabled">Classificeren</button>
+     <button type="button" id="btn-class" class="btn  btn-primary" disabled="disabled">Classificeren</button>
      <button type="button" id="btn-calc" class="btn btn-success" disabled="disabled">Bereken</button>
       </div>
+      <div id="wachten" class="progress progress-striped active" style="display:none">
+         <div id="bar-anim" up='true' class="progress-bar progress-bar-success" style="opacity: 0;width: 0%">
+        <span class="sr-only"></span>
+      </div>
+      <div class="progress-bar progress-bar-success " role="progressbar"  style="width: 30%;">
+        <span class="sr-only"></span>
+      </div>
+    </div>
+    <div class="uitleg resultaat text-muted" style="display:none;">
+      <pre id="json-resultaat"></pre>
     </div>   
   </div>
 </body>
