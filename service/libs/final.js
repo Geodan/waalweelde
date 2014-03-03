@@ -1,7 +1,7 @@
 $(document).ready(function(){
 $('#json-resultaat').on('click',function(){
 	var geojson = $(this).data('response');
-	alert('en weer terug....')
+	opener.document.drawResult(geojson);
 	reset();
 })
 
