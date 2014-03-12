@@ -94,8 +94,6 @@ letter-spacing: 1px;
     maxExtent: [-285401.92,22598.08,595401.9199999999,903401.9199999999],
     controls: [
         new OpenLayers.Control.Zoom()
-        
-        
         ]
     });
 
@@ -194,10 +192,10 @@ letter-spacing: 1px;
     }
 
     map.addControls([perceelcontrol,navcontrol,editcontrol,selectcontrol,resultcontrol]);
-    
+       
 
     map.setCenter(new OpenLayers.LonLat(199000,434000),8)
-
+ map.addControl(new OpenLayers.Control.Permalink({anchor: true}));
     $('#btn-nav').change(function(){
       perceelcontrol.deactivate();
       editcontrol.deactivate();
