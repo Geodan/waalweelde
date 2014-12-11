@@ -1,5 +1,6 @@
 <?php
-include 'config.php';
+//include 'config.php';
+$conn = pg_pconnect("host=osgis.geodan.nl dbname=osgis2 user=osgis password=osgis");
 if (!$conn) {
   echo "An error occurred.\n";
   exit;
